@@ -1,0 +1,37 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Dataset - du lieu anh rat nang, khong day len GitHub
+dataset/raw/
+dataset/train/
+dataset/val/
+dataset/test/
+
+# Model files - file model da train thuong nang
+models/*.h5
+models/*.keras
+models/*.pt
+models/*.pth
+
+# Output results
+outputs/
+reports/results/
+
+# Environment variables
+.env
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
