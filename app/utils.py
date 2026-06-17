@@ -1,94 +1,109 @@
+import numpy as np
+import tensorflow as tf
+from PIL import Image
 import json
 import os
-import sys
-import numpy as np
 
-from PIL import Image
-from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.resnet50 import preprocess_input
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC_DIR = os.path.join(BASE_DIR, "src")
 
-if SRC_DIR not in sys.path:
-    sys.path.append(SRC_DIR)
+MODEL_PATH = "models/lychee_resnet50.h5"
+CLASS_PATH = "models/class_indices.json"
 
-from config import MODEL_PATH, CLASS_INDICES_PATH, IMG_SIZE
-
-
-CLASS_VIETNAMESE = {
-    "Anthrax Leaf": "Lá bị bệnh thán thư",
-    "Bituminous Leaf": "Lá bị ứ nhựa / sẫm màu",
-    "Curl Leaf": "Lá bị xoăn",
-    "Deficiency Leaf": "Lá thiếu dinh dưỡng",
-    "Dry Leaf": "Lá khô",
-    "Felt Leaf": "Lá bị lông nhung",
-    "Fungal Leaf Spot": "Lá bị đốm nấm",
-    "Healthy Leaf": "Lá khỏe mạnh",
-    "Leaf Blight": "Lá bị cháy lá",
-    "Leaf Gall": "Lá bị u / sần lá",
-}
+# ======================
+# NGƯỠNG ỔN ĐỊNH (QUAN TRỌNG)
+# ======================
+CONF_THRESHOLD = 0.65
+GAP_THRESHOLD = 0.20
 
 
-CLASS_DESCRIPTIONS = {
-    "Anthrax Leaf": "Lá xuất hiện các vết đốm nâu hoặc đen, có thể lan rộng và làm hoại tử mô lá.",
-    "Bituminous Leaf": "Lá có biểu hiện sẫm màu hoặc xuất hiện mảng đen bất thường trên bề mặt.",
-    "Curl Leaf": "Lá bị cong, cuộn hoặc biến dạng so với lá bình thường.",
-    "Deficiency Leaf": "Lá có biểu hiện vàng, nhạt màu hoặc phát triển không đều do thiếu dinh dưỡng.",
-    "Dry Leaf": "Lá bị khô, cháy mép hoặc chuyển sang màu nâu vàng.",
-    "Felt Leaf": "Lá xuất hiện lớp lông nhung hoặc mảng bất thường trên bề mặt.",
-    "Fungal Leaf Spot": "Lá có nhiều đốm nhỏ do nấm, thường có màu nâu, đen hoặc xám.",
-    "Healthy Leaf": "Lá có màu xanh tự nhiên, không có dấu hiệu bệnh rõ ràng.",
-    "Leaf Blight": "Lá xuất hiện vùng cháy, vàng nâu hoặc hoại tử ở mép lá hay đầu lá.",
-    "Leaf Gall": "Lá xuất hiện các nốt u, sần hoặc biến dạng cục bộ.",
-}
-
-
-def load_class_names():
-    with open(CLASS_INDICES_PATH, "r", encoding="utf-8") as f:
-        class_indices = json.load(f)
-
-    index_to_class = {index: name for name, index in class_indices.items()}
-    class_names = [index_to_class[i] for i in range(len(index_to_class))]
-
-    return class_names
-
-
+# ======================
+# LOAD MODEL
+# ======================
 def load_prediction_model():
     if not os.path.exists(MODEL_PATH):
         return None
-
-    return load_model(MODEL_PATH)
-
-
-def preprocess_uploaded_image(uploaded_file):
-    img = Image.open(uploaded_file).convert("RGB")
-    img_resized = img.resize((IMG_SIZE, IMG_SIZE))
-
-    img_array = np.array(img_resized)
-    img_array = np.expand_dims(img_array, axis=0)
-    img_array = preprocess_input(img_array)
-
-    return img, img_array
+    return tf.keras.models.load_model(MODEL_PATH)
 
 
+# ======================
+# LOAD CLASS
+# ======================
+def load_classes():
+    with open(CLASS_PATH, "r", encoding="utf-8") as f:
+        return list(json.load(f).keys())
+
+
+# ======================
+# MÔ TẢ
+# ======================
+def get_description(name):
+    desc = {
+        "Healthy Leaf": "Lá khỏe mạnh.",
+        "Deficiency Leaf": "Thiếu dinh dưỡng.",
+        "Leaf Blight": "Bệnh cháy lá.",
+        "Leaf Gall": "Bệnh u lá.",
+        "Fungal Leaf Spot": "Bệnh nấm.",
+        "Dry Leaf": "Lá khô.",
+        "Anthrax Leaf": "Đốm than.",
+        "Bituminous Leaf": "Đốm đen.",
+        "Curl Leaf": "Lá xoăn."
+    }
+    return desc.get(name, "")
+
+
+# ======================
+# PREDICT (ỔN ĐỊNH VERSION)
+# ======================
 def predict_uploaded_image(model, uploaded_file):
-    class_names = load_class_names()
 
-    original_img, img_array = preprocess_uploaded_image(uploaded_file)
+    image = Image.open(uploaded_file).convert("RGB")
 
-    predictions = model.predict(img_array)[0]
+    img = image.resize((224, 224))
+    x = np.array(img)
 
-    class_index = int(np.argmax(predictions))
-    confidence = float(predictions[class_index])
-    class_name = class_names[class_index]
+    x = np.expand_dims(x, axis=0)
+    x = preprocess_input(x)
+
+    preds = model.predict(x)[0]
+
+    # ======================
+    # 🔥 THÊM DÒNG BẠN YÊU CẦU
+    # ======================
+    confidence = np.max(preds)
+
+    class_names = load_classes()
+
+    top1_idx = np.argmax(preds)
+    top1 = preds[top1_idx]
+
+    sorted_preds = np.sort(preds)
+    top2 = sorted_preds[-2]
+
+    gap = top1 - top2
+
+    # ======================
+    # LOGIC ỔN ĐỊNH
+    # ======================
+    if top1 < CONF_THRESHOLD or gap < GAP_THRESHOLD:
+        return {
+            "image": image,
+            "class_name": "Unknown",
+            "class_name_vi": "❌ Không phải lá vải / Không chắc chắn",
+            "confidence": float(confidence),
+            "description": "Model không đủ chắc chắn để dự đoán.",
+            "all_predictions": preds,
+            "class_names": class_names
+        }
+
+    class_name = class_names[top1_idx]
 
     return {
-        "image": original_img,
+        "image": image,
         "class_name": class_name,
-        "class_name_vi": CLASS_VIETNAMESE.get(class_name, class_name),
-        "description": CLASS_DESCRIPTIONS.get(class_name, "Chua co mo ta."),
-        "confidence": confidence,
-        "all_predictions": predictions,
-        "class_names": class_names,
+        "class_name_vi": class_name,
+        "confidence": float(confidence),
+        "description": get_description(class_name),
+        "all_predictions": preds,
+        "class_names": class_names
     }
