@@ -43,15 +43,14 @@ def get_description(name):
         "Deficiency Leaf": "Thiếu dinh dưỡng.",
         "Leaf Blight": "Bệnh cháy lá.",
         "Leaf Gall": "Bệnh u lá.",
-        "Fungal Leaf Spot": "Bệnh nấm.",
+        "Fungal Leaf Spot": "Lá bị đốm nấm.",
         "Dry Leaf": "Lá khô.",
-        "Anthrax Leaf": "Đốm than.",
-        "Bituminous Leaf": "Đốm đen.",
-        "Curl Leaf": "Lá xoăn."
+        "Anthrax Leaf": "Bệnh thán thư.",
+        "Bituminous Leaf": "Lá bị ứ nhựa, sẫm màu.",
+        "Curl Leaf": "Lá xoăn.",
+        "Felt Leaf": "Lá bị nhện lông nhung."
     }
     return desc.get(name, "")
-
-
 # ======================
 # PREDICT (ỔN ĐỊNH VERSION)
 # ======================
@@ -89,7 +88,7 @@ def predict_uploaded_image(model, uploaded_file):
         return {
             "image": image,
             "class_name": "Unknown",
-            "class_name_vi": "❌ Không phải lá vải / Không chắc chắn",
+            "class_name_vi": "Không phải lá vải / Không chắc chắn",
             "confidence": float(confidence),
             "description": "Model không đủ chắc chắn để dự đoán.",
             "all_predictions": preds,

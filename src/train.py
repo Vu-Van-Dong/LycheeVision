@@ -2,14 +2,21 @@ import os
 import json
 import matplotlib.pyplot as plt
 
-from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.applications.resnet50 import preprocess_input
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
-from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D
-from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import ResNet50                                              # Mô hình ResNet50 đã được huấn luyện trước trên ImageNet
+from tensorflow.keras.applications.resnet50 import preprocess_input   
+# Hàm tiền xử lý dữ liệu theo chuẩn của ResNet50
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau    
+# Các Callback hỗ trợ quá trình huấn luyện
+from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D     
+# Các lớp xây dựng phần đầu ra của mô hình
+from tensorflow.keras.models import Model     
+# Đối tượng mô hình
+from tensorflow.keras.optimizers import Adam        
+# Bộ tối ưu Adam
+from tensorflow.keras.preprocessing.image import ImageDataGenerator                             # Công cụ đọc ảnh và tăng cường dữ liệu
 
+
+# IMPORT CẤU HÌNH TỪ FILE config.py
 from config import (
     TRAIN_DIR,
     VAL_DIR,
@@ -22,9 +29,9 @@ from config import (
     EPOCHS,
     LEARNING_RATE,
 )
+# HÀM XÂY DỰNG MÔ HÌNH RESNET50
 
-
-def build_model(num_classes):
+def build_model(num_classes):                        # Khởi tạo mô hình ResNet50 sử dụng trọng số ImageNet
     base_model = ResNet50(
         weights="imagenet",
         include_top=False,
@@ -35,13 +42,17 @@ def build_model(num_classes):
     base_model.trainable = False
 
     x = base_model.output
-    x = GlobalAveragePooling2D()(x)
-    x = Dense(256, activation="relu")(x)
+    x = GlobalAveragePooling2D()(x)                         
+    # Dropout giúp giảm hiện tượng Overfitting
+    x = Dense(256, activation="relu")(x)                                   
     x = Dropout(0.5)(x)
-    output = Dense(num_classes, activation="softmax")(x)
+    output = Dense(num_classes, activation="softmax")(x)    
+    # Lớp đầu ra sử dụng Softmax
 
-    model = Model(inputs=base_model.input, outputs=output)
+    model = Model(inputs=base_model.input, outputs=output)      
+    # Xây dựng mô hình hoàn chỉnh
 
+   # Biên dịch mô hình
     model.compile(
         optimizer=Adam(learning_rate=LEARNING_RATE),
         loss="categorical_crossentropy",
@@ -50,10 +61,10 @@ def build_model(num_classes):
 
     return model
 
-
+    # Tạo thư mục lưu kết quả nếu chưa tồn tại
 def save_training_charts(history):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-
+  # Vẽ biểu đồ Accuracy
     plt.figure()
     plt.plot(history.history["accuracy"], label="Train Accuracy")
     plt.plot(history.history["val_accuracy"], label="Validation Accuracy")
@@ -64,6 +75,7 @@ def save_training_charts(history):
     plt.savefig(os.path.join(OUTPUT_DIR, "accuracy_chart.png"), dpi=300)
     plt.close()
 
+   # Vẽ biểu đồ Loss
     plt.figure()
     plt.plot(history.history["loss"], label="Train Loss")
     plt.plot(history.history["val_loss"], label="Validation Loss")
@@ -76,31 +88,36 @@ def save_training_charts(history):
 
 
 def main():
+    # Tạo thư mục lưu model và kết quả
     os.makedirs(MODEL_DIR, exist_ok=True)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     train_datagen = ImageDataGenerator(
-        preprocessing_function=preprocess_input,
-        rotation_range=25,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-        zoom_range=0.2,
-        horizontal_flip=True,
-        brightness_range=[0.8, 1.2],
-        fill_mode="nearest",
+        preprocessing_function=preprocess_input,      # Chuẩn hóa dữ liệu theo ResNet50
+        rotation_range=40,                            # Xoay ảnh ngẫu nhiên ±40°
+        width_shift_range=0.2,                  # Dịch ngang ảnh ngẫu nhiên ±20% chiều rộng
+        height_shift_range=0.2,                 # Dịch dọc ảnh ngẫu nhiên ±20% chiều cao
+        zoom_range=0.2,                         # Phóng to/thu nhỏ ảnh ngẫu nhiên ±20%
+        horizontal_flip=True,                   # Lật ảnh ngẫu nhiên theo chiều ngang
+        brightness_range=[0.8, 1.2],            # Thay đổi độ sáng ngẫu nhiên
+        fill_mode="nearest",                    # Điền các pixel trống bằng giá trị của pixel gần nhất
     )
 
-    val_datagen = ImageDataGenerator(
+    val_datagen = ImageDataGenerator(           # Chỉ chuẩn hóa dữ liệu cho tập validation, không tăng cường dữ liệu
         preprocessing_function=preprocess_input
     )
-
+    # ĐỌC DỮ LIỆU TRAIN
     train_generator = train_datagen.flow_from_directory(
         TRAIN_DIR,
-        target_size=(IMG_SIZE, IMG_SIZE),
+        target_size=(IMG_SIZE, IMG_SIZE),               
+        # Resize toàn bộ ảnh về 224×224
         batch_size=BATCH_SIZE,
-        class_mode="categorical",
+        class_mode="categorical",                              
+        # Phân loại nhiều lớp
         shuffle=True,
     )
+
+    # ĐỌC DỮ LIỆU VALIDATION
 
     val_generator = val_datagen.flow_from_directory(
         VAL_DIR,
@@ -109,7 +126,7 @@ def main():
         class_mode="categorical",
         shuffle=False,
     )
-
+    # Lấy số lượng lớp
     num_classes = train_generator.num_classes
 
     print("So lop:", num_classes)
@@ -117,25 +134,27 @@ def main():
 
     with open(CLASS_INDICES_PATH, "w", encoding="utf-8") as f:
         json.dump(train_generator.class_indices, f, ensure_ascii=False, indent=4)
-
-    model = build_model(num_classes)
-    model.summary()
-
+    # Xây dựng mô hình
+    model = build_model(num_classes)                
+    model.summary()                                
+    # Hiển thị cấu trúc mô hình
+    # CALLBACKS
     callbacks = [
-        ModelCheckpoint(
+        ModelCheckpoint(                         
+    # Lưu model có độ chính xác Validation cao nhất
             MODEL_PATH,
             monitor="val_accuracy",
             save_best_only=True,
             mode="max",
             verbose=1,
         ),
-        EarlyStopping(
+        EarlyStopping(                              # Dừng huấn luyện nếu mô hình không còn cải thiện
             monitor="val_loss",
             patience=5,
             restore_best_weights=True,
             verbose=1,
         ),
-        ReduceLROnPlateau(
+        ReduceLROnPlateau(                          # Giảm Learning Rate khi mô hình học chậm
             monitor="val_loss",
             factor=0.3,
             patience=3,
@@ -143,7 +162,7 @@ def main():
             verbose=1,
         ),
     ]
-
+    # HUẤN LUYỆN MÔ HÌNH
     history = model.fit(
         train_generator,
         validation_data=val_generator,
@@ -151,7 +170,8 @@ def main():
         callbacks=callbacks,
     )
 
-    save_training_charts(history)
+    save_training_charts(history)                                  
+    # Lưu biểu đồ Accuracy và Loss
 
     print("Da huan luyen xong.")
     print("Model duoc luu tai:", MODEL_PATH)
@@ -160,3 +180,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

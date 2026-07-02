@@ -38,62 +38,63 @@ st.markdown("""
 /* ================= HEADER CARD ================= */
 
 .header-card{
-
+    
     display:flex;
+    
     align-items:center;
-
+    
     gap:25px;
-
+    
     background:white;
-
+    
     padding:28px;
-
+    
     border-radius:20px;
-
+    
     box-shadow:0 8px 25px rgba(0,0,0,0.08);
-
+    
     border-left:8px solid #2E7D32;
-
+    
     margin-bottom:28px;
-
+    
 }
 
 .header-logo{
-
+    
     flex-shrink:0;
-
+    
 }
 
 .header-logo img{
-
+    
     width:95px;
-
+    
     height:95px;
-
+    
     border-radius:16px;
-
+    
 }
 
 .header-content{
-
+    
     flex:1;
-
+    
 }
 
 .header-school{
-
+    
     font-size:16px;
-
+    
     font-weight:700;
-
+    
     color:#2E7D32;
-
+    
     text-transform:uppercase;
-
+    
     letter-spacing:1px;
-
+    
     margin-bottom:8px;
-
+    
 }
 
 .header-title{
@@ -332,7 +333,7 @@ disease_info = {
 
 
 # ======================
-# PREDICTION
+# PREDICTION (dự đoán )
 # ======================
 
 if uploaded_file is not None:
@@ -344,12 +345,7 @@ if uploaded_file is not None:
 
     # ================= ẢNH =================
     with col1:
-
-        # st.image(
-        #     result["image"],
-        #     caption="📷 Ảnh đầu vào",
-        #     width=420
-        # )
+        
         st.image(
             result["image"],
             caption="\U0001F4F7 Ảnh đầu vào",
@@ -389,7 +385,7 @@ if uploaded_file is not None:
                 st.write(info["treatment"])
 
     # ======================
-    # PROBABILITY TABLE
+    # PROBABILITY TABLE (bảng xác suất)
     # ======================
     st.markdown("---")
     st.markdown("### \U0001F4C8 Xác suất từng lớp")
