@@ -67,7 +67,7 @@ def predict_uploaded_image(model, uploaded_file):
     preds = model.predict(x)[0]
 
     # ======================
-    # 🔥 THÊM DÒNG BẠN YÊU CẦU
+    # TÍNH ĐỘ TỰ TIN
     # ======================
     confidence = np.max(preds)
 

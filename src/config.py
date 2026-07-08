@@ -17,6 +17,6 @@ CLASS_INDICES_PATH = os.path.join(MODEL_DIR, "class_indices.json")
 # CÁC SIÊU THAM SỐ
 
 IMG_SIZE = 224                  # Kích thước ảnh đầu vào (224 × 224 pixel)
-BATCH_SIZE = 16                 # Số lượng ảnh được xử lý trong mỗi batch khi huấn luyện
+BATCH_SIZE = 32         #16     # Số lượng ảnh được xử lý trong mỗi batch khi huấn luyện
 EPOCHS = 10                     # Số lần mô hình học toàn bộ tập dữ liệu
-LEARNING_RATE = 0.0001       # Tốc độ học (Learning Rate) của bộ tối ưu Adam # Giá trị nhỏ giúp mô hình hội tụ ổn định hơn.
+LEARNING_RATE = 0.0001          # Tốc độ học (Learning Rate) của bộ tối ưu Adam # Giá trị nhỏ giúp mô hình hội tụ ổn định hơn.

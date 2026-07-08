@@ -1,19 +1,20 @@
 import os
 import json
 import matplotlib.pyplot as plt
-
-from tensorflow.keras.applications import ResNet50                                              # Mô hình ResNet50 đã được huấn luyện trước trên ImageNet
+# Mô hình ResNet50 đã được huấn luyện trước trên ImageNet
+from tensorflow.keras.applications import ResNet50     
+# Hàm tiền xử lý dữ liệu theo chuẩn của ResNet50                                         
 from tensorflow.keras.applications.resnet50 import preprocess_input   
-# Hàm tiền xử lý dữ liệu theo chuẩn của ResNet50
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau    
 # Các Callback hỗ trợ quá trình huấn luyện
-from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D     
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau    
 # Các lớp xây dựng phần đầu ra của mô hình
-from tensorflow.keras.models import Model     
+from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D     
 # Đối tượng mô hình
-from tensorflow.keras.optimizers import Adam        
+from tensorflow.keras.models import Model     
 # Bộ tối ưu Adam
-from tensorflow.keras.preprocessing.image import ImageDataGenerator                             # Công cụ đọc ảnh và tăng cường dữ liệu
+from tensorflow.keras.optimizers import Adam        
+# Công cụ đọc ảnh và tăng cường dữ liệu
+from tensorflow.keras.preprocessing.image import ImageDataGenerator                             
 
 
 # IMPORT CẤU HÌNH TỪ FILE config.py
@@ -42,10 +43,11 @@ def build_model(num_classes):                        # Khởi tạo mô hình Re
     base_model.trainable = False
 
     x = base_model.output
+    # GlobalAveragePooling2D giúp giảm số lượng tham số và tránh overfitting, chuyển các đặc trưng 2D thành vector 1D   
     x = GlobalAveragePooling2D()(x)                         
     # Dropout giúp giảm hiện tượng Overfitting
     x = Dense(256, activation="relu")(x)                                   
-    x = Dropout(0.5)(x)
+    x = Dropout(0.6)(x)         #0.5  
     output = Dense(num_classes, activation="softmax")(x)    
     # Lớp đầu ra sử dụng Softmax
 
@@ -102,8 +104,8 @@ def main():
         brightness_range=[0.8, 1.2],            # Thay đổi độ sáng ngẫu nhiên
         fill_mode="nearest",                    # Điền các pixel trống bằng giá trị của pixel gần nhất
     )
-
-    val_datagen = ImageDataGenerator(           # Chỉ chuẩn hóa dữ liệu cho tập validation, không tăng cường dữ liệu
+    # Chỉ chuẩn hóa dữ liệu cho tập validation, không tăng cường dữ liệu
+    val_datagen = ImageDataGenerator(           
         preprocessing_function=preprocess_input
     )
     # ĐỌC DỮ LIỆU TRAIN

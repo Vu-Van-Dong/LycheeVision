@@ -1,16 +1,16 @@
   
     
-import os
-import random
-import shutil
-from pathlib import Path
+import os                   #làm việc với hệ thống file
+import random               #làm việc với dữ liệu ngẫu nhiên
+import shutil               #làm việc với hệ thống file(sửa chữa, xóa, copy)
+from pathlib import Path    #làm việc với đường dẫn file
 
 # ======================
 # THƯ VIỆN BỔ SUNG CHO DATA CLEANING
 # ======================
-from PIL import Image
+from PIL import Image        #Xử lý ảnh cơ bản trong Python
 import cv2
-import numpy as np
+import numpy as np          #Xử lý mảng số
 
 # ======================
 # ĐƯỜNG DẪN THƯ MỤC DATASET
@@ -88,15 +88,15 @@ def is_blurry(image_path, threshold=BLUR_THRESHOLD):
     Phát hiện ảnh mờ bằng Laplacian variance
     """
     try:
-        img = cv2.imread(str(image_path))
+        img = cv2.imread(str(image_path))   # Đọc ảnh bằng OpenCV
 
         if img is None:
             return True
 
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        variance = cv2.Laplacian(gray, cv2.CV_64F).var()
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)    # Chuyển ảnh sang ảnh xám
+        variance = cv2.Laplacian(gray, cv2.CV_64F).var() # Tính độ biến thiên Laplacian
 
-        return variance < threshold
+        return variance < threshold    # Nếu độ biến thiên nhỏ hơn ngưỡng  => mờ
     except:
         return True
 
@@ -187,97 +187,3 @@ if __name__ == "__main__":
     
     
     
-    
-#     import os
-# import random
-# import shutil
-# from pathlib import Path
-
-# # Duong dan thu muc
-# BASE_DIR = Path(__file__).resolve().parent.parent
-
-# RAW_DIR = BASE_DIR / "dataset" / "raw"
-# TRAIN_DIR = BASE_DIR / "dataset" / "train"
-# VAL_DIR = BASE_DIR / "dataset" / "val"
-# TEST_DIR = BASE_DIR / "dataset" / "test"
-
-# # Ty le chia du lieu
-# TRAIN_RATIO = 0.7
-# VAL_RATIO = 0.15
-# TEST_RATIO = 0.15
-
-# # Dinh dang anh hop le
-# IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"]
-
-# # Xóa toàn bộ dữ liệu trong thư mục (nếu tồn tại) và tạo lại thư mục rỗng.  
-
-# def clear_folder(folder_path):
-#     if folder_path.exists():
-#         shutil.rmtree(folder_path)
-#     folder_path.mkdir(parents=True, exist_ok=True)
-
-# #  Sao chép các ảnh từ danh sách image_list sang thư mục target_folder.
-
-# def copy_images(image_list, target_folder):
-#     target_folder.mkdir(parents=True, exist_ok=True)
-
-#     for image_path in image_list:
-#         shutil.copy2(image_path, target_folder / image_path.name)
-
-
-# # HÀM CHÍNH THỰC HIỆN CHIA DỮ LIỆU
-
-# def main():
-#     print("Bat dau chia dataset...")
-#     print(f"Thu muc raw: {RAW_DIR}")
-
-#     if not RAW_DIR.exists():
-#         print("Khong tim thay thu muc dataset/raw")
-#         return
-
-#     clear_folder(TRAIN_DIR)
-#     clear_folder(VAL_DIR)
-#     clear_folder(TEST_DIR)
-
-#     class_folders = [folder for folder in RAW_DIR.iterdir() if folder.is_dir()]
-
-#     if len(class_folders) == 0:
-#         print("Khong co thu muc lop nao trong dataset/raw")
-#         return
-
-#     for class_folder in class_folders:
-#         class_name = class_folder.name
-
-#         images = [
-#             file for file in class_folder.rglob("*")
-#             if file.suffix.lower() in IMAGE_EXTENSIONS
-#         ]
-
-#         random.shuffle(images)
-
-#         total = len(images)
-#         train_count = int(total * TRAIN_RATIO)
-#         val_count = int(total * VAL_RATIO)
-
-#         train_images = images[:train_count]
-#         val_images = images[train_count:train_count + val_count]
-#         test_images = images[train_count + val_count:]
-
-#         copy_images(train_images, TRAIN_DIR / class_name)
-#         copy_images(val_images, VAL_DIR / class_name)
-#         copy_images(test_images, TEST_DIR / class_name)
-
-#         print(
-#             f"{class_name}: total={total}, "
-#             f"train={len(train_images)}, "
-#             f"val={len(val_images)}, "
-#             f"test={len(test_images)}"
-#         )
-
-#     print("Hoan thanh chia dataset!")
-
-
-# if __name__ == "__main__":
-#     main()
-    
- 

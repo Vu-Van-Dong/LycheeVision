@@ -258,7 +258,7 @@ with st.container(border=True):
             line-height:1.2;
             color:#1E1E1E;
             margin-bottom:6px;">
-            LycheeVision – Hệ thống ứng dụng CNN trong phát hiện và phân loại sâu bệnh trên cây vải thiều
+            LycheeVision – Hệ thống ứng dụng CNN trong phát hiện và phân loại sâu-bệnh trên cây vải thiều
         </div>
         """, unsafe_allow_html=True)
 # ======================
@@ -399,3 +399,5 @@ if uploaded_file is not None:
 
 else:
     st.info("\U0001F4CC Vui lòng upload ảnh để bắt đầu")
+
+
